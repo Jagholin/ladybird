@@ -60,6 +60,7 @@ def main():
     test_parser.add_argument(
         "pattern", nargs=argparse.OPTIONAL, help="Limits the tests that are run to those that match the regex pattern"
     )
+    test_parser.add_argument("--rpattern", "-r", nargs=argparse.OPTIONAL, help="Same as pattern, but in reverse")
 
     run_parser = subparsers.add_parser(
         "run", help="Runs the application on the build host", parents=[preset_parser, compiler_parser, target_parser]
@@ -144,7 +145,7 @@ def main():
     elif args.command == "test":
         build_dir = configure_main(platform, args.preset, args.cc, args.cxx)
         build_main(build_dir, args.jobs)
-        test_main(build_dir, args.preset, args.pattern)
+        test_main(build_dir, args.preset, args.pattern, args.rpattern)
     elif args.command == "run":
         if args.preset == "Sanitizer":
             # FIXME: Find some way to centralize these b/w CMakePresets.json, CI files, Documentation and here.
@@ -343,7 +344,7 @@ def build_main(build_dir: Path, jobs: Optional[str], target: Optional[str] = Non
     run_command(build_args, exit_on_failure=True)
 
 
-def test_main(build_dir: Path, preset: str, pattern: Optional[str]):
+def test_main(build_dir: Path, preset: str, pattern: Optional[str], rpattern: Optional[str]):
     test_args = [
         "ctest",
         "--preset",
@@ -353,8 +354,14 @@ def test_main(build_dir: Path, preset: str, pattern: Optional[str]):
         str(build_dir),
     ]
 
+    print("pattern is ", pattern)
+    print("rpattern is ", rpattern)
+
     if pattern:
         test_args.extend(["-R", pattern])
+
+    if rpattern:
+        test_args.extend(["-E", rpattern])
 
     run_command(test_args, exit_on_failure=True)
 
