@@ -134,6 +134,8 @@ def main():
         sys.exit(1)
 
     if "target" in args:
+        if args.target == "-":
+            args.target = "Ladybird"
         if platform.host_system != HostSystem.Windows and args.target == "ladybird":
             args.target = "Ladybird"
         if not args.target and args.command not in ("build", "rebuild"):
